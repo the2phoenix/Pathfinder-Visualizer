@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pathfinder City — Interactive Pathfinding Visualizer</title>
+  <meta name="description"
+    content="Visualize BFS, DFS, Dijkstra and A* pathfinding algorithms on an interactive 100-node city map with multi-stop trip planning.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <header class="header" id="header">
+    <div class="header-left">
+      <div class="logo">
+        <span class="logo-icon">🗺️</span>
+        <h1>Pathfinder <span class="accent">City</span></h1>
+      </div>
+      <span class="tagline">100-Node City · Multi-Stop Trip Planner</span>
+    </div>
+    <div class="header-right">
+      <span class="kbd-hint">Click nodes to add stops</span>
+      <span class="kbd-hint">Scroll to zoom</span>
+      <span class="kbd-hint">Shift+Drag to pan</span>
+    </div>
+  </header>
+
+  <!-- ===== MAIN LAYOUT ===== -->
+  <main class="main-layout">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
+
+      <!-- Algorithm selection -->
+      <section class="panel">
+        <h2 class="panel-title">
+          <span class="panel-icon">⚙️</span> Algorithm
+        </h2>
+        <select id="algorithm-select" class="select">
+          <option value="dijkstra">Dijkstra's Algorithm</option>
+          <option value="astar">A* Search</option>
+          <option value="bfs">Breadth-First Search</option>
+          <option value="dfs">Depth-First Search</option>
+        </select>
+      </section>
+
+      <!-- Route: Start + Multi-stop waypoints -->
+      <section class="panel route-panel">
+        <h2 class="panel-title">
+          <span class="panel-icon">📍</span> Trip Route
+        </h2>
+
+        <!-- Start (fixed) -->
+        <div class="route-start">
+          <span class="route-badge start-badge">🏠</span>
+          <select id="start-select" class="select">
+            <option value="">— Start —</option>
+          </select>
+        </div>
+
+        <div class="route-connector"></div>
+
+        <!-- Waypoint list (drag-to-reorder) -->
+        <div class="waypoint-list" id="waypoint-list">
+          <!-- Waypoint items inserted here by JS -->
+        </div>
+
+        <button class="btn btn-add-stop" id="add-stop-btn">
+          <span class="btn-icon">＋</span> Add Stop
+        </button>
+      </section>
+
+      <!-- Speed -->
+      <section class="panel">
+        <h2 class="panel-title">
+          <span class="panel-icon">⏱️</span> Speed
+          <span class="speed-value" id="speed-label">1x</span>
+        </h2>
+        <input type="range" id="speed-slider" class="slider" min="0.25" max="5" step="0.25" value="1">
+        <div class="slider-labels">
+          <span>Slow</span>
+          <span>Fast</span>
+        </div>
+      </section>
+
+      <!-- Action buttons -->
+      <section class="panel actions">
+        <button id="run-btn" class="btn btn-primary">
+          <span class="btn-icon">▶</span> Find Path
+        </button>
+        <button id="reset-btn" class="btn btn-secondary">
+          <span class="btn-icon">↺</span> Reset
+        </button>
+      </section>
+
+      <!-- Legend -->
+      <section class="panel legend" id="legend-panel">
+        <h2 class="panel-title">
+          <span class="panel-icon">🎨</span> Legend
+        </h2>
+        <div class="legend-grid">
+          <div class="legend-item"><span class="legend-dot" style="background:#00ff88"></span> Home</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#22c55e"></span> Park</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#6366f1"></span> Government</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#06b6d4"></span> Station</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#8b5cf6"></span> Education</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#ec4899"></span> Shopping</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#ef4444"></span> Hospital</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#f97316"></span> Entertainment</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#dc2626"></span> Emergency</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#0ea5e9"></span> Transport</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#64748b"></span> Business</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#a3a3a3"></span> Residential</div>
+        </div>
+      </section>
+
+    </aside>
+
+    <!-- ===== CANVAS AREA ===== -->
+    <div class="canvas-container" id="canvas-container">
+      <canvas id="map-canvas"></canvas>
+
+      <!-- Status bar -->
+      <div class="status-bar" id="status-bar">
+        <span id="status-text">Click nodes on the map or use dropdowns to build your trip</span>
+      </div>
+
+      <!-- Stats overlay -->
+      <div class="stats-panel" id="stats-panel">
+        <div class="stat">
+          <span class="stat-value" id="stat-visited">-</span>
+          <span class="stat-label">Nodes Visited</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="stat-legs">-</span>
+          <span class="stat-label">Legs</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="stat-distance">-</span>
+          <span class="stat-label">Total Distance</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="stat-time">-</span>
+          <span class="stat-label">Time</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+
+</html>
