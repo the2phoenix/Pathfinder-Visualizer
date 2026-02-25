@@ -4,7 +4,7 @@
 
 ## 🔗 Live Demo
 Check out the live version of Pathfinder City here:
-[**[Insert your Vercel URL here]**](https://your-vercel-link.vercel.app/)
+[**[https://pathfinder-visualizer-eta.vercel.app/]**]
 
 ## 🗺️ Key Features
 
@@ -65,3 +65,4 @@ Because this project utilizes ES6 Modules (`import`/`export`), it must be served
 4. **Reorder Stops:** Click and drag the "⠿" handle on any waypoint card in the sidebar to reorder destinations.
 5. **Set Speed:** Adjust the animation execution speed with the speed slider.
 6. **Find Path:** Click **"▶ Find Path"** to watch the algorithm sequentially route through all your waypoints!
+
